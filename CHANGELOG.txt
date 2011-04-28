@@ -1,0 +1,4 @@
+### 1.1
+Modified for easier configuration options.
+Added README.txt
+Added CHANGELOG.txt
