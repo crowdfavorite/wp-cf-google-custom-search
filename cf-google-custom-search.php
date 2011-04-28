@@ -22,7 +22,6 @@ function OnLoad() {
 	options = new google.search.SearcherOptions();
 	options.setExpandMode(google.search.SearchControl.EXPAND_MODE_OPEN);
 
-
 	// Add this domain as separate search
 	// ###DOMAIN### is a variable that will be swapped out with the current
 	//    domain.  You can manually put a domain in here if you want instead.
@@ -31,7 +30,6 @@ function OnLoad() {
 	thisDomainSearch.setSiteRestriction("###DOMAIN###");
 	searchControl.addSearcher(thisDomainSearch, options);
 
-
 	// This second 'searcher' is completely optional.....
 	// Instead of a domain, add a Google Custom Search Engine as another
 	//   place to search (handy if you need to query more than 1 domain)
@@ -39,8 +37,6 @@ function OnLoad() {
 	allDomainSearch.setUserDefinedLabel("example.com");
 	allDomainSearch.setSiteRestriction("example.com");
 	searchControl.addSearcher(allDomainSearch, options);
-
-
 
 	// Tell the searcher to draw itself and tell it where to attach
 	searchControl.draw(document.getElementById("searchcontrol"));
@@ -100,11 +96,6 @@ function cf_get_google_search_form(){
 		echo('No google search key');
 		return false;
 	}
-	else if (!$google_search_config) {
-		/* No google search options */
-		echo('No google search options');
-		return false;
-	}
 	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi?key='.$key.'"></script>';
 	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi"></script>';
 	
@@ -117,11 +108,15 @@ add_shortcode('cf_google_custom_search_results', 'cf_get_google_search_form');
 function cf_google_custom_search_admin_form() {
 	$updated_string = '';
 	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'save_google_search_info') {
-		update_site_option('cf_google_api_key', stripslashes($_POST['google_api_key']));
-		update_site_option('cf_google_search_config', stripslashes($_POST['google_search_config']));
+		update_site_option('cf_google_api_key', stripslashes(trim($_POST['google_api_key'])));
+		update_site_option('cf_google_search_config', stripslashes(trim($_POST['google_search_config'])));
+		update_site_option('cf_google_search_domain', stripslashes(trim($_POST['google_search_domain'])));
+		update_site_option('cf_google_search_parent', stripslashes(trim($_POST['google_search_parent'])));
 		$updated_string = '<div class="updated fade" id="message" style="background-color: rgb(255, 251, 204);"><p><strong>Settings saved.</strong></p></div>';
 	}
 	$google_api_key = get_site_option('cf_google_api_key');
+	$google_search_domain = get_site_option('cf_google_search_domain');
+	$google_search_parent = get_site_option('cf_google_search_parent');
 	$google_search_config = get_site_option('cf_google_search_config');
 	?>
 	<div class="wrap">
@@ -135,7 +130,15 @@ function cf_google_custom_search_admin_form() {
 						<td><input type="text" name="google_api_key" value="<?php echo $google_api_key; ?>" id="google_api_key" style="width: 500px;"/></td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="google_search_config">Google Search Configuration<?php echo apply_filters('cf_google_search_custom_notes', $notes); ?></label></th>
+						<th scope="row"><label for="google_search_domain">Google Search Domain<br />(default "<?php echo $_SERVER['SERVER_NAME']; ?>")</label></th>
+						<td><input type="text" name="google_search_domain" value="<?php echo $google_search_domain; ?>" id="google_search_domain" style="width: 500px;"/></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="google_search_parent">Results Parent Element ID<br />(default "searchcontrol")</label></th>
+						<td><input type="text" name="google_search_parent" vlaue="<?php echo $google_search_parent; ?>" id="google_search_parent" style="width: 500px;"/></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="google_search_config">Custom Google Search Script<br />(Advanced Use Only)<?php echo apply_filters('cf_google_search_custom_notes', $notes); ?></label></th>
 						<td><textarea name="google_search_config" id="google_search_config" cols="100" rows="20"><?php echo $google_search_config; ?></textarea><br /></td>
 					</tr>
 				</tbody>
@@ -159,12 +162,37 @@ function cf_add_custom_search_menu_item() {
 }
 add_action('admin_menu', 'cf_add_custom_search_menu_item');
 
-function cf_replace_google_search_variables($config) {
+function cf_custom_google_search_get_config_script($config) {
+	if (!$config) {
+		$config =
+/** Default config script **/
+'google.load("search", "1");
+
+function OnLoad() {
+	var searchControl = new google.search.SearchControl();
+	options = new google.search.SearcherOptions();
+	options.setExpandMode(google.search.SearchControl.EXPAND_MODE_OPEN);
+	var thisDomainSearch = new google.search.WebSearch();
+	thisDomainSearch.setUserDefinedLabel("###DOMAIN###");
+	thisDomainSearch.setSiteRestriction("###DOMAIN###");
+	searchControl.addSearcher(thisDomainSearch, options);
+	searchControl.draw(document.getElementById("###PARENT###"));
+	searchControl.setResultSetSize(google.search.Search.LARGE_RESULTSET);
+	searchControl.execute("###SEARCH_TERMS###");
+}
+google.setOnLoadCallback(OnLoad);';
+/** End default config script **/
+	}
+	$domain = get_site_option('cf_google_search_domain');
+	$domain = $domain?$domain:$_SERVER['SERVER_NAME'];
+	$parent_div = get_site_option('cf_google_search_parent');
+	$parent_div = $parent_div?$parent_div:'searchcontrol';
 	$config = str_replace('###SEARCH_TERMS###', $_POST['cf_google_search_terms'], $config);
-	$config = str_replace('###DOMAIN###', $_SERVER['SERVER_NAME'], $config);
+	$config = str_replace('###DOMAIN###', $domain, $config);
+	$config = str_replace('###PARENT###', $parent_div, $config);
 	return $config;
 }
-add_filter('cf_google_search_config', 'cf_replace_google_search_variables');
+add_filter('cf_google_search_config', 'cf_custom_google_search_get_config_script');
 function cf_add_google_search_custom_notes($note) {
 	$note = '
 		<div style="
@@ -178,8 +206,9 @@ function cf_add_google_search_custom_notes($note) {
 			margin: 10px 0px;
 			">
 			Custom Variables:
-			   <p><code>###DOMAIN###</code></p>
-			   <p><code>###SEARCH_TERMS###</code></p>
+			   <p><code>###DOMAIN###</code><br />Search domain variable</p>
+			   <p><code>###SEARCH_TERMS###</code><br />Terms passed in through the form</p>
+			   <p><code>###PARENT###</code><br />The parent element ID for search results</p>
 		</div>';
 	return $note;
 }
