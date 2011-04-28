@@ -1,0 +1,187 @@
+<?php
+/* 
+Plugin Name: CF Google Custom Search
+Plugin URI:
+Description: Utilize Google's Custom Search API instead of WordPress' search functionality.
+Version: 1.0
+Author: Crowd Favorite
+Author URI: http://crowdfavorite.com/
+*/
+
+/*******************************************************
+-------------------------------------
+EXAMPLE ADMIN CONFIGURATION
+-------------------------------------
+google.load("search", "1");
+
+function OnLoad() {
+	// Create a search control
+	var searchControl = new google.search.SearchControl();
+
+	// Have the search results display more than one initially
+	options = new google.search.SearcherOptions();
+	options.setExpandMode(google.search.SearchControl.EXPAND_MODE_OPEN);
+
+
+	// Add this domain as separate search
+	// ###DOMAIN### is a variable that will be swapped out with the current
+	//    domain.  You can manually put a domain in here if you want instead.
+	var thisDomainSearch = new google.search.WebSearch();
+	thisDomainSearch.setUserDefinedLabel("###DOMAIN###");
+	thisDomainSearch.setSiteRestriction("###DOMAIN###");
+	searchControl.addSearcher(thisDomainSearch, options);
+
+
+	// This second 'searcher' is completely optional.....
+	// Instead of a domain, add a Google Custom Search Engine as another
+	//   place to search (handy if you need to query more than 1 domain)
+	var allDomainSearch = new google.search.WebSearch();
+	allDomainSearch.setUserDefinedLabel("example.com");
+	allDomainSearch.setSiteRestriction("example.com");
+	searchControl.addSearcher(allDomainSearch, options);
+
+
+
+	// Tell the searcher to draw itself and tell it where to attach
+	searchControl.draw(document.getElementById("searchcontrol"));
+
+	// Tell the search control how many items to return
+	searchControl.setResultSetSize(google.search.Search.LARGE_RESULTSET);
+
+	// Execute an inital search
+	// ###SEARCH_TERMS### is a variable that will be replaced by 
+	//    WordPress' search terms.  If you needed some hard-coded search
+	//    term, you could put it there.
+	searchControl.execute("###SEARCH_TERMS###");
+}
+google.setOnLoadCallback(OnLoad);
+*******************************************************/
+wp_register_style('cf_google_custom_search', plugins_url('cf-google-custom-search.css', __FILE__));
+wp_enqueue_style('cf_google_custom_search');
+function cf_add_google_custom_search($form){
+	$form = cf_google_custom_search_form();
+	return $form;
+}
+add_filter('get_search_form', 'cf_add_google_custom_search', 100);
+
+function cf_google_custom_search_shortcode($atts) {
+	return cf_google_custom_search_form();
+}
+add_shortcode('cf_google_custom_search', 'cf_google_custom_search_shortcode');
+
+function cf_google_custom_search_form() {
+	$form = '
+	<form class="google-custom-search-form" action="'.attribute_escape(site_url('/search')).'" method="post">
+		<div>
+			<input type="text" name="cf_google_search_terms" class="cf_google_search_terms" size="20" />
+			<input type="submit" name="submit_button" class="submit_button" value="'.__('Search').'" />
+			<input type="hidden" name="cf_action" value="do_google_search" />
+		</div>
+	</form>';
+	return $form;
+}
+
+function cf_add_google_search_results_page() {
+	/* Only do this page population if we're really searching for something */
+	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'do_google_search') {
+		if (function_exists('cfct_template_file')) {
+			cfct_template_file('posts', 'search');
+			exit;
+		}
+	}
+}
+add_action('template_redirect', 'cf_add_google_search_results_page', 5);
+
+function cf_get_google_search_form(){
+	$key = get_site_option('cf_google_api_key');
+	$google_search_config = get_site_option('cf_google_search_config');
+	if (!$key) {
+		/* No google search key */
+		echo('No google search key');
+		return false;
+	}
+	else if (!$google_search_config) {
+		/* No google search options */
+		echo('No google search options');
+		return false;
+	}
+	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi?key='.$key.'"></script>';
+	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi"></script>';
+	
+	/* Get config and replace necessary items (domain and search terms) */
+	$google_search_config = '<script type="text/javascript">'.apply_filters('cf_google_search_config', $google_search_config).'</script>';
+	return $google_search_script.$google_search_config;
+}
+add_shortcode('cf_google_custom_search_results', 'cf_get_google_search_form');
+
+function cf_google_custom_search_admin_form() {
+	$updated_string = '';
+	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'save_google_search_info') {
+		update_site_option('cf_google_api_key', stripslashes($_POST['google_api_key']));
+		update_site_option('cf_google_search_config', stripslashes($_POST['google_search_config']));
+		$updated_string = '<div class="updated fade" id="message" style="background-color: rgb(255, 251, 204);"><p><strong>Settings saved.</strong></p></div>';
+	}
+	$google_api_key = get_site_option('cf_google_api_key');
+	$google_search_config = get_site_option('cf_google_search_config');
+	?>
+	<div class="wrap">
+		<?php echo $updated_string; ?>
+		<h2>Google Custom Search Admin</h2>
+		<form method="post">
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row"><label for="google_api_key">Google Search API Key</label></th>
+						<td><input type="text" name="google_api_key" value="<?php echo $google_api_key; ?>" id="google_api_key" style="width: 500px;"/></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="google_search_config">Google Search Configuration<?php echo apply_filters('cf_google_search_custom_notes', $notes); ?></label></th>
+						<td><textarea name="google_search_config" id="google_search_config" cols="100" rows="20"><?php echo $google_search_config; ?></textarea><br /></td>
+					</tr>
+				</tbody>
+			</table>
+			<input type="hidden" name="cf_action" value="save_google_search_info" id="cf_action">
+			<p class="submit">
+				<input class="button-primary" type="submit" value="Save Changes" name="Submit"/>
+			</p>
+		</form>
+	</div>
+	<?php
+}
+function cf_add_custom_search_menu_item() {
+	add_options_page(
+		'CF Google Custom Search',
+		'CF Google Search',
+		10,
+		'cf_google_custom_search',
+		'cf_google_custom_search_admin_form'
+	);
+}
+add_action('admin_menu', 'cf_add_custom_search_menu_item');
+
+function cf_replace_google_search_variables($config) {
+	$config = str_replace('###SEARCH_TERMS###', $_POST['cf_google_search_terms'], $config);
+	$config = str_replace('###DOMAIN###', $_SERVER['SERVER_NAME'], $config);
+	return $config;
+}
+add_filter('cf_google_search_config', 'cf_replace_google_search_variables');
+function cf_add_google_search_custom_notes($note) {
+	$note = '
+		<div style="
+			background:#f1f1f1; 
+			border:1px solid #dfdfdf;
+		    -moz-border-radius:4px;
+		    -webkit-border-radius:4px;
+		    -khtml-border-radius:4px;
+		    border-radius:4px;
+			padding:8px;
+			margin: 10px 0px;
+			">
+			Custom Variables:
+			   <p><code>###DOMAIN###</code></p>
+			   <p><code>###SEARCH_TERMS###</code></p>
+		</div>';
+	return $note;
+}
+add_filter('cf_google_search_custom_notes', 'cf_add_google_search_custom_notes');
+?>
