@@ -70,7 +70,7 @@ function cf_google_custom_search_form() {
 	<form class="google-custom-search-form" action="'.attribute_escape(site_url('/search')).'" method="post">
 		<div>
 			<input type="text" name="cf_google_search_terms" class="cf_google_search_terms" size="20" />
-			<input type="submit" name="submit_button" class="submit_button" value="'.__('Search').'" />
+			<button type="submit" name="submit_button" class="submit_button">Search</button>
 			<input type="hidden" name="cf_action" value="do_google_search" />
 		</div>
 	</form>';
