@@ -1,3 +1,6 @@
+### 1.2
+Now creates search results div defined in PARENT variable.
+
 ### 1.1
 Modified for easier configuration options.
 Added README.txt

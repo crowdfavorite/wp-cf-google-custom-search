@@ -3,7 +3,7 @@
 Plugin Name: CF Google Custom Search
 Plugin URI:
 Description: Utilize Google's Custom Search API instead of WordPress' search functionality.
-Version: 1.1
+Version: 1.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
@@ -89,32 +89,27 @@ function cf_add_google_search_results_page() {
 add_action('template_redirect', 'cf_add_google_search_results_page', 5);
 
 function cf_get_google_search_form(){
-	$key = get_site_option('cf_google_api_key');
 	$google_search_config = get_site_option('cf_google_search_config');
-	if (!$key) {
-		/* No google search key */
-		echo('No google search key');
-		return false;
+	$parent_id = get_site_option('cf_google_search_parent');
+	if (!$parent_id) {
+		$parent_id = 'searchcontrol';
 	}
-	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi?key='.$key.'"></script>';
 	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi"></script>';
 	
 	/* Get config and replace necessary items (domain and search terms) */
 	$google_search_config = '<script type="text/javascript">'.apply_filters('cf_google_search_config', $google_search_config).'</script>';
-	return $google_search_script.$google_search_config;
+	return '<div id="'.$parent_id.'"></div>'.$google_search_script.$google_search_config;
 }
 add_shortcode('cf_google_custom_search_results', 'cf_get_google_search_form');
 
 function cf_google_custom_search_admin_form() {
 	$updated_string = '';
 	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'save_google_search_info') {
-		update_site_option('cf_google_api_key', stripslashes(trim($_POST['google_api_key'])));
 		update_site_option('cf_google_search_config', stripslashes(trim($_POST['google_search_config'])));
 		update_site_option('cf_google_search_domain', stripslashes(trim($_POST['google_search_domain'])));
 		update_site_option('cf_google_search_parent', stripslashes(trim($_POST['google_search_parent'])));
 		$updated_string = '<div class="updated fade" id="message" style="background-color: rgb(255, 251, 204);"><p><strong>Settings saved.</strong></p></div>';
 	}
-	$google_api_key = get_site_option('cf_google_api_key');
 	$google_search_domain = get_site_option('cf_google_search_domain');
 	$google_search_parent = get_site_option('cf_google_search_parent');
 	$google_search_config = get_site_option('cf_google_search_config');
@@ -125,10 +120,6 @@ function cf_google_custom_search_admin_form() {
 		<form method="post">
 			<table class="form-table">
 				<tbody>
-					<tr>
-						<th scope="row"><label for="google_api_key">Google Search API Key</label></th>
-						<td><input type="text" name="google_api_key" value="<?php echo $google_api_key; ?>" id="google_api_key" style="width: 500px;"/></td>
-					</tr>
 					<tr>
 						<th scope="row"><label for="google_search_domain">Google Search Domain<br />(default "<?php echo $_SERVER['SERVER_NAME']; ?>")</label></th>
 						<td><input type="text" name="google_search_domain" value="<?php echo $google_search_domain; ?>" id="google_search_domain" style="width: 500px;"/></td>
