@@ -69,7 +69,7 @@ function cf_google_custom_search_form() {
 	$form = '
 	<form id="searchform" class="google-custom-search-form" action="'.attribute_escape(site_url('/search')).'" method="post">
 		<div>
-			<input id="s" type="text" name="cf_google_search_terms" class="cf_google_search_terms" size="20" />
+			<input id="s" type="text" name="s" class="cf_google_search_terms" size="20" />
 			<button id="searchsubmit" type="submit" name="submit_button" class="submit_button">Search</button>
 			<input type="hidden" name="cf_action" value="do_google_search" />
 		</div>
@@ -178,7 +178,7 @@ google.setOnLoadCallback(OnLoad);';
 	$domain = $domain?$domain:$_SERVER['SERVER_NAME'];
 	$parent_div = get_site_option('cf_google_search_parent');
 	$parent_div = $parent_div?$parent_div:'searchcontrol';
-	$config = str_replace('###SEARCH_TERMS###', $_POST['cf_google_search_terms'], $config);
+	$config = str_replace('###SEARCH_TERMS###', $_POST['s'], $config);
 	$config = str_replace('###DOMAIN###', $domain, $config);
 	$config = str_replace('###PARENT###', $parent_div, $config);
 	return $config;
