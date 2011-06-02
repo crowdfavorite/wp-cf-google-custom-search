@@ -1,3 +1,6 @@
+### 1.2.1
+Added IDs to the search form to allow it to get the default styles from WordPress
+
 ### 1.2
 Now creates search results div defined in PARENT variable.
 
