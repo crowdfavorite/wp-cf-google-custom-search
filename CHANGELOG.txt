@@ -1,6 +1,7 @@
 ### 1.2.1
 Added IDs to the search form to allow it to get the default styles from WordPress
 Changed search parameter to 's' to match with WordPress usage.
+Pointed search query back to root page. This should be modified in the future to be configurable.
 
 ### 1.2
 Now creates search results div defined in PARENT variable.
