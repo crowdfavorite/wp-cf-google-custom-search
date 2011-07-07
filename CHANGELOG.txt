@@ -1,3 +1,6 @@
+### 1.2.2
+Added additional security
+
 ### 1.2.1
 Added IDs to the search form to allow it to get the default styles from WordPress
 
