@@ -97,7 +97,7 @@ function cf_get_google_search_form(){
 	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi"></script>';
 	
 	/* Get config and replace necessary items (domain and search terms) */
-	$google_search_config = '<script type="text/javascript">'.esc_js(apply_filters('cf_google_search_config', $google_search_config)).'</script>';
+	$google_search_config = '<script type="text/javascript">'.apply_filters('cf_google_search_config', $google_search_config).'</script>';
 	return '<div id="'.esc_attr($parent_id).'"></div>'.$google_search_script.$google_search_config;
 }
 add_shortcode('cf_google_custom_search_results', 'cf_get_google_search_form');
@@ -132,7 +132,7 @@ function cf_google_custom_search_admin_form() {
 						<td><input type="text" name="google_search_parent" vlaue="<?php echo esc_attr($google_search_parent); ?>" id="google_search_parent" style="width: 500px;"/></td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="google_search_config">Custom Google Search Script<br />(Advanced Use Only)<?php echo esc_html(apply_filters('cf_google_search_custom_notes', $notes)); ?></label></th>
+						<th scope="row"><label for="google_search_config">Custom Google Search Script<br />(Advanced Use Only)<?php echo apply_filters('cf_google_search_custom_notes', $notes); ?></label></th>
 						<td><textarea name="google_search_config" id="google_search_config" cols="100" rows="20"><?php echo esc_textarea($google_search_config); ?></textarea><br /></td>
 					</tr>
 				</tbody>
