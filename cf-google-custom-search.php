@@ -3,7 +3,7 @@
 Plugin Name: CF Google Custom Search
 Plugin URI:
 Description: Utilize Google's Custom Search API instead of WordPress' search functionality.
-Version: 1.2.1
+Version: 1.2.2
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
@@ -67,9 +67,9 @@ add_shortcode('cf_google_custom_search', 'cf_google_custom_search_shortcode');
 
 function cf_google_custom_search_form() {
 	$form = '
-	<form id="searchform" class="google-custom-search-form" action="'.attribute_escape(site_url('/search')).'" method="post">
+	<form id="searchform" class="google-custom-search-form" action="'.esc_url(site_url('/')).'" method="post">
 		<div>
-			<input id="s" type="text" name="cf_google_search_terms" class="cf_google_search_terms" size="20" />
+			<input id="s" type="text" name="s" class="cf_google_search_terms" size="20" />
 			<button id="searchsubmit" type="submit" name="submit_button" class="submit_button">Search</button>
 			<input type="hidden" name="cf_action" value="do_google_search" />
 		</div>
@@ -89,8 +89,8 @@ function cf_add_google_search_results_page() {
 add_action('template_redirect', 'cf_add_google_search_results_page', 5);
 
 function cf_get_google_search_form(){
-	$google_search_config = get_site_option('cf_google_search_config');
-	$parent_id = get_site_option('cf_google_search_parent');
+	$google_search_config = get_option('cf_google_search_config');
+	$parent_id = get_option('cf_google_search_parent');
 	if (!$parent_id) {
 		$parent_id = 'searchcontrol';
 	}
@@ -98,21 +98,24 @@ function cf_get_google_search_form(){
 	
 	/* Get config and replace necessary items (domain and search terms) */
 	$google_search_config = '<script type="text/javascript">'.apply_filters('cf_google_search_config', $google_search_config).'</script>';
-	return '<div id="'.$parent_id.'"></div>'.$google_search_script.$google_search_config;
+	return '<div id="'.esc_attr($parent_id).'"></div>'.$google_search_script.$google_search_config;
 }
 add_shortcode('cf_google_custom_search_results', 'cf_get_google_search_form');
 
 function cf_google_custom_search_admin_form() {
 	$updated_string = '';
 	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'save_google_search_info') {
-		update_site_option('cf_google_search_config', stripslashes(trim($_POST['google_search_config'])));
-		update_site_option('cf_google_search_domain', stripslashes(trim($_POST['google_search_domain'])));
-		update_site_option('cf_google_search_parent', stripslashes(trim($_POST['google_search_parent'])));
+		if (!check_admin_referer('cfgcs', 'cfgcs_settings_nonce')) {
+			die();
+		}
+		update_option('cf_google_search_config', stripslashes_deep(trim($_POST['google_search_config'])));
+		update_option('cf_google_search_domain', stripslashes_deep(trim($_POST['google_search_domain'])));
+		update_option('cf_google_search_parent', stripslashes_deep(trim($_POST['google_search_parent'])));
 		$updated_string = '<div class="updated fade" id="message" style="background-color: rgb(255, 251, 204);"><p><strong>Settings saved.</strong></p></div>';
 	}
-	$google_search_domain = get_site_option('cf_google_search_domain');
-	$google_search_parent = get_site_option('cf_google_search_parent');
-	$google_search_config = get_site_option('cf_google_search_config');
+	$google_search_domain = get_option('cf_google_search_domain');
+	$google_search_parent = get_option('cf_google_search_parent');
+	$google_search_config = get_option('cf_google_search_config');
 	?>
 	<div class="wrap">
 		<?php echo $updated_string; ?>
@@ -121,32 +124,34 @@ function cf_google_custom_search_admin_form() {
 			<table class="form-table">
 				<tbody>
 					<tr>
-						<th scope="row"><label for="google_search_domain">Google Search Domain<br />(default "<?php echo $_SERVER['SERVER_NAME']; ?>")</label></th>
-						<td><input type="text" name="google_search_domain" value="<?php echo $google_search_domain; ?>" id="google_search_domain" style="width: 500px;"/></td>
+						<th scope="row"><label for="google_search_domain">Google Search Domain<br />(default "<?php echo esc_html($_SERVER['SERVER_NAME']); ?>")</label></th>
+						<td><input type="text" name="google_search_domain" value="<?php echo esc_attr($google_search_domain); ?>" id="google_search_domain" style="width: 500px;"/></td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="google_search_parent">Results Parent Element ID<br />(default "searchcontrol")</label></th>
-						<td><input type="text" name="google_search_parent" vlaue="<?php echo $google_search_parent; ?>" id="google_search_parent" style="width: 500px;"/></td>
+						<td><input type="text" name="google_search_parent" vlaue="<?php echo esc_attr($google_search_parent); ?>" id="google_search_parent" style="width: 500px;"/></td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="google_search_config">Custom Google Search Script<br />(Advanced Use Only)<?php echo apply_filters('cf_google_search_custom_notes', $notes); ?></label></th>
-						<td><textarea name="google_search_config" id="google_search_config" cols="100" rows="20"><?php echo $google_search_config; ?></textarea><br /></td>
+						<td><textarea name="google_search_config" id="google_search_config" cols="100" rows="20"><?php echo esc_textarea($google_search_config); ?></textarea><br /></td>
 					</tr>
 				</tbody>
 			</table>
-			<input type="hidden" name="cf_action" value="save_google_search_info" id="cf_action">
 			<p class="submit">
+				<input type="hidden" name="cf_action" value="save_google_search_info" id="cf_action">
+				<?php echo wp_nonce_field('cfgcs', 'cfgcs_settings_nonce', true, false).wp_referer_field(false); ?>
 				<input class="button-primary" type="submit" value="Save Changes" name="Submit"/>
 			</p>
 		</form>
 	</div>
 	<?php
 }
+
 function cf_add_custom_search_menu_item() {
 	add_options_page(
 		'CF Google Custom Search',
 		'CF Google Search',
-		10,
+		'manage_options',
 		'cf_google_custom_search',
 		'cf_google_custom_search_admin_form'
 	);
@@ -174,16 +179,18 @@ function OnLoad() {
 google.setOnLoadCallback(OnLoad);';
 /** End default config script **/
 	}
-	$domain = get_site_option('cf_google_search_domain');
-	$domain = $domain?$domain:$_SERVER['SERVER_NAME'];
-	$parent_div = get_site_option('cf_google_search_parent');
-	$parent_div = $parent_div?$parent_div:'searchcontrol';
-	$config = str_replace('###SEARCH_TERMS###', $_POST['cf_google_search_terms'], $config);
-	$config = str_replace('###DOMAIN###', $domain, $config);
-	$config = str_replace('###PARENT###', $parent_div, $config);
+	$domain = get_option('cf_google_search_domain');
+	$domain = $domain ? $domain : $_SERVER['SERVER_NAME'];
+	$parent_div = get_option('cf_google_search_parent');
+	$parent_div = $parent_div ? $parent_div : 'searchcontrol';
+	
+	$config = str_replace('###SEARCH_TERMS###', esc_js($_POST['s']), $config);
+	$config = str_replace('###DOMAIN###', esc_js($domain), $config);
+	$config = str_replace('###PARENT###', esc_js($parent_div), $config);
 	return $config;
 }
 add_filter('cf_google_search_config', 'cf_custom_google_search_get_config_script');
+
 function cf_add_google_search_custom_notes($note) {
 	$note = '
 		<div style="
