@@ -1,3 +1,6 @@
+### 1.2.3
+Modified to use default search form and behavior
+
 ### 1.2.2
 Added additional security
 

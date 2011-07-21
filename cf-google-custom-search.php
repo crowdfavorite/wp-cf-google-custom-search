@@ -3,7 +3,7 @@
 Plugin Name: CF Google Custom Search
 Plugin URI:
 Description: Utilize Google's Custom Search API instead of WordPress' search functionality.
-Version: 1.2.2
+Version: 1.2.3
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
@@ -54,7 +54,7 @@ google.setOnLoadCallback(OnLoad);
 *******************************************************/
 wp_register_style('cf_google_custom_search', plugins_url('cf-google-custom-search.css', __FILE__));
 wp_enqueue_style('cf_google_custom_search');
-function cf_add_google_custom_search($form){
+/* function cf_add_google_custom_search($form){
 	$form = cf_google_custom_search_form();
 	return $form;
 }
@@ -63,7 +63,7 @@ add_filter('get_search_form', 'cf_add_google_custom_search', 100);
 function cf_google_custom_search_shortcode($atts) {
 	return cf_google_custom_search_form();
 }
-add_shortcode('cf_google_custom_search', 'cf_google_custom_search_shortcode');
+add_shortcode('cf_google_custom_search', 'cf_google_custom_search_shortcode'); 
 
 function cf_google_custom_search_form() {
 	$form = '
@@ -75,11 +75,11 @@ function cf_google_custom_search_form() {
 		</div>
 	</form>';
 	return $form;
-}
+} */
 
 function cf_add_google_search_results_page() {
 	/* Only do this page population if we're really searching for something */
-	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'do_google_search') {
+	if (is_search() && get_search_query()) {
 		if (function_exists('cfct_template_file')) {
 			cfct_template_file('posts', 'search');
 			exit;
@@ -159,6 +159,7 @@ function cf_add_custom_search_menu_item() {
 add_action('admin_menu', 'cf_add_custom_search_menu_item');
 
 function cf_custom_google_search_get_config_script($config) {
+	$query = get_search_query();
 	if (!$config) {
 		$config =
 /** Default config script **/
@@ -184,7 +185,7 @@ google.setOnLoadCallback(OnLoad);';
 	$parent_div = get_option('cf_google_search_parent');
 	$parent_div = $parent_div ? $parent_div : 'searchcontrol';
 	
-	$config = str_replace('###SEARCH_TERMS###', esc_js($_POST['s']), $config);
+	$config = str_replace('###SEARCH_TERMS###', esc_js($query), $config);
 	$config = str_replace('###DOMAIN###', esc_js($domain), $config);
 	$config = str_replace('###PARENT###', esc_js($parent_div), $config);
 	return $config;
