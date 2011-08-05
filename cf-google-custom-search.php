@@ -3,101 +3,36 @@
 Plugin Name: CF Google Custom Search
 Plugin URI:
 Description: Utilize Google's Custom Search API instead of WordPress' search functionality.
-Version: 1.2.2
+Version: 1.3
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
 
-/*******************************************************
--------------------------------------
-EXAMPLE ADMIN CONFIGURATION
--------------------------------------
-google.load("search", "1");
-
-function OnLoad() {
-	// Create a search control
-	var searchControl = new google.search.SearchControl();
-
-	// Have the search results display more than one initially
-	options = new google.search.SearcherOptions();
-	options.setExpandMode(google.search.SearchControl.EXPAND_MODE_OPEN);
-
-	// Add this domain as separate search
-	// ###DOMAIN### is a variable that will be swapped out with the current
-	//    domain.  You can manually put a domain in here if you want instead.
-	var thisDomainSearch = new google.search.WebSearch();
-	thisDomainSearch.setUserDefinedLabel("###DOMAIN###");
-	thisDomainSearch.setSiteRestriction("###DOMAIN###");
-	searchControl.addSearcher(thisDomainSearch, options);
-
-	// This second 'searcher' is completely optional.....
-	// Instead of a domain, add a Google Custom Search Engine as another
-	//   place to search (handy if you need to query more than 1 domain)
-	var allDomainSearch = new google.search.WebSearch();
-	allDomainSearch.setUserDefinedLabel("example.com");
-	allDomainSearch.setSiteRestriction("example.com");
-	searchControl.addSearcher(allDomainSearch, options);
-
-	// Tell the searcher to draw itself and tell it where to attach
-	searchControl.draw(document.getElementById("searchcontrol"));
-
-	// Tell the search control how many items to return
-	searchControl.setResultSetSize(google.search.Search.LARGE_RESULTSET);
-
-	// Execute an inital search
-	// ###SEARCH_TERMS### is a variable that will be replaced by 
-	//    WordPress' search terms.  If you needed some hard-coded search
-	//    term, you could put it there.
-	searchControl.execute("###SEARCH_TERMS###");
-}
-google.setOnLoadCallback(OnLoad);
-*******************************************************/
+// Enqueue the styles in the plugin
 wp_register_style('cf_google_custom_search', plugins_url('cf-google-custom-search.css', __FILE__));
 wp_enqueue_style('cf_google_custom_search');
-function cf_add_google_custom_search($form){
-	$form = cf_google_custom_search_form();
-	return $form;
-}
-add_filter('get_search_form', 'cf_add_google_custom_search', 100);
 
-function cf_google_custom_search_shortcode($atts) {
-	return cf_google_custom_search_form();
-}
-add_shortcode('cf_google_custom_search', 'cf_google_custom_search_shortcode');
-
-function cf_google_custom_search_form() {
-	$form = '
-	<form id="searchform" class="google-custom-search-form" action="'.esc_url(site_url('/')).'" method="post">
-		<div>
-			<input id="s" type="text" name="s" class="cf_google_search_terms" size="20" />
-			<button id="searchsubmit" type="submit" name="submit_button" class="submit_button">Search</button>
-			<input type="hidden" name="cf_action" value="do_google_search" />
-		</div>
-	</form>';
-	return $form;
-}
-
-function cf_add_google_search_results_page() {
-	/* Only do this page population if we're really searching for something */
-	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'do_google_search') {
-		if (function_exists('cfct_template_file')) {
-			cfct_template_file('posts', 'search');
-			exit;
-		}
-	}
-}
-add_action('template_redirect', 'cf_add_google_search_results_page', 5);
-
+/**
+ * Output the HTML and JavaScript that does the Google Search
+ *
+ * @return string 
+ */
 function cf_get_google_search_form(){
-	$google_search_config = get_option('cf_google_search_config');
+	// Get the parent element that the JavaScript uses
 	$parent_id = get_option('cf_google_search_parent');
 	if (!$parent_id) {
 		$parent_id = 'searchcontrol';
 	}
+	
+	// Bring in the Google Search JavaScript API
 	$google_search_script = '<script type="text/javascript" src="http://www.google.com/jsapi"></script>';
 	
 	/* Get config and replace necessary items (domain and search terms) */
-	$google_search_config = '<script type="text/javascript">'.apply_filters('cf_google_search_config', $google_search_config).'</script>';
+	$google_search_config = 
+		'<script type="text/javascript">'.
+			apply_filters('cf_google_search_config', get_option('cf_google_search_config')).
+		'</script>';
+
 	return '<div id="'.esc_attr($parent_id).'"></div>'.$google_search_script.$google_search_config;
 }
 add_shortcode('cf_google_custom_search_results', 'cf_get_google_search_form');
@@ -106,7 +41,7 @@ function cf_google_custom_search_admin_form() {
 	$updated_string = '';
 	if (isset($_POST['cf_action']) && $_POST['cf_action'] == 'save_google_search_info') {
 		if (!check_admin_referer('cfgcs', 'cfgcs_settings_nonce')) {
-			die();
+			wp_die('You should not be here.');
 		}
 		update_option('cf_google_search_config', stripslashes_deep(trim($_POST['google_search_config'])));
 		update_option('cf_google_search_domain', stripslashes_deep(trim($_POST['google_search_domain'])));
@@ -116,6 +51,9 @@ function cf_google_custom_search_admin_form() {
 	$google_search_domain = get_option('cf_google_search_domain');
 	$google_search_parent = get_option('cf_google_search_parent');
 	$google_search_config = get_option('cf_google_search_config');
+	
+	// Default notes' HTML
+	$notes = '';
 	?>
 	<div class="wrap">
 		<?php echo $updated_string; ?>
@@ -158,6 +96,14 @@ function cf_add_custom_search_menu_item() {
 }
 add_action('admin_menu', 'cf_add_custom_search_menu_item');
 
+/**
+ * Output the configuration JavaScript code, with proper 
+ * replacements for the domain, parent element id, and 
+ * search terms
+ *
+ * @param string $config 
+ * @return string
+ */
 function cf_custom_google_search_get_config_script($config) {
 	if (!$config) {
 		$config =
@@ -184,22 +130,28 @@ google.setOnLoadCallback(OnLoad);';
 	$parent_div = get_option('cf_google_search_parent');
 	$parent_div = $parent_div ? $parent_div : 'searchcontrol';
 	
-	$config = str_replace('###SEARCH_TERMS###', esc_js($_POST['s']), $config);
+	$config = str_replace('###SEARCH_TERMS###', esc_js(get_search_query()), $config);
 	$config = str_replace('###DOMAIN###', esc_js($domain), $config);
 	$config = str_replace('###PARENT###', esc_js($parent_div), $config);
 	return $config;
 }
 add_filter('cf_google_search_config', 'cf_custom_google_search_get_config_script');
 
-function cf_add_google_search_custom_notes($note) {
+/**
+ * Adds some help text to the admin settings page
+ *
+ * @param string $note 
+ * @return void
+ */
+function cf_add_google_search_custom_notes($note = '') {
 	$note = '
 		<div style="
 			background:#f1f1f1; 
 			border:1px solid #dfdfdf;
-		    -moz-border-radius:4px;
-		    -webkit-border-radius:4px;
-		    -khtml-border-radius:4px;
-		    border-radius:4px;
+			-moz-border-radius:4px;
+			-webkit-border-radius:4px;
+			-khtml-border-radius:4px;
+			border-radius:4px;
 			padding:8px;
 			margin: 10px 0px;
 			">
@@ -211,4 +163,37 @@ function cf_add_google_search_custom_notes($note) {
 	return $note;
 }
 add_filter('cf_google_search_custom_notes', 'cf_add_google_search_custom_notes');
+
+
+/**
+ * No need to trigger WordPress search since Google Custom Search is being used
+ * (props VIP support)
+ * 
+ * @param string $where 
+ * @param object $query 
+ * @return string
+ */
+function cf_google_search_kill_wp_search( $where, $query ) {
+	if(!is_admin() && $query->is_search()) {
+	    $where = ' AND 1=0';
+	}
+	
+	// Only need to do this for the main query
+	remove_filter('posts_where', 'cf_google_search_kill_wp_search', 10, 2);
+	
+	return $where;
+}
+add_filter('posts_where', 'cf_google_search_kill_wp_search', 10, 2);
+
+/**
+ * Keeping this function and shortcode around for backwards compat.  Really 
+ * shouldn't be used though.
+ *
+ * @param array $atts 
+ * @return string - HTML
+ */
+function cf_google_custom_search_shortcode($atts = array()) {
+	return get_search_form(false);
+}
+add_shortcode('cf_google_custom_search', 'cf_google_custom_search_shortcode');
 ?>
