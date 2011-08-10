@@ -174,7 +174,7 @@ add_filter('cf_google_search_custom_notes', 'cf_add_google_search_custom_notes')
  * @return string
  */
 function cf_google_search_kill_wp_search( $where, $query ) {
-	if(!is_admin() && $query->is_search()) {
+	if(!is_admin() && $query->is_search) {
 	    $where = ' AND 1=0';
 	}
 	
