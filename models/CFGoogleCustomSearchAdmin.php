@@ -1,9 +1,10 @@
 <?php
 
+load_textdomain('cfgcse');
 class CFGoogleCustomSearchAdmin {
 
 	public static function adminMenu() {
-		add_submenu_page('options-general.php', 'CF Google Search', 'CF Google Search', 10, 'cf-google-custom-search', 'CFGoogleCustomSearchAdmin::adminPage');
+		add_submenu_page('options-general.php', __('CF Google Search', 'cfgcse'), __('CF Google Search', 'cfgcse'), 10, 'cf-google-custom-search', 'CFGoogleCustomSearchAdmin::adminPage');
 	}
 	
 	public static function adminPage() {
@@ -19,23 +20,23 @@ class CFGoogleCustomSearchAdmin {
 		$api_key = get_option('_cf_gcse_api_key', null);
 		$cse_id = get_option('_cf_gcse_engine_id', null);
 		$results = intval(get_option('_cf_gcse_num_results', 10)); ?>
-<h1>CF Google Custom Search Engine Configuration</h1>
+<h1><?php echo __('CF Google Custom Search Engine Configuration', 'cfgcse'); ?></h1>
 <form action="" method="post" id="cf_google_custom_search_admin">
 <ul>
 	<li>
-		<label for="cf_gcse_api_key">Google API Key:</label>
+		<label for="cf_gcse_api_key"><?php echo __('Google API Key', 'cfgcse'); ?>:</label>
 		<input type="text" id="cf_gcse_api_key" name="cf_gcse_api_key" value="<?php echo $api_key; ?>" />
 	</li>
 	<li>
-		<label for="cf_gcse_num_results">Results Per Page (1 - 10):</label>
+		<label for="cf_gcse_num_results"><?php echo __('Results Per Page', 'cfgcse'); ?> (1 - 10):</label>
 		<input type="text" id="cf_gcse_num_results" name="cf_gcse_num_results" value="<?php echo $results; ?>" />
 	</li>
 	<li>
-		<label for="cf_gcse_remote_id">Search Engine ID:</label>
+		<label for="cf_gcse_remote_id"><?php echo __('Search Engine ID', 'cfgcse'); ?>:</label>
 		<input type="text" id="cf_gcse_engine_id" name="cf_gcse_engine_id" value="<?php echo $cse_id; ?>" />
 	</li>
 	<li>
-		<input type="submit" name="cf_google_custom_search_save" value="Save" />
+		<input type="submit" name="cf_google_custom_search_save" value="<?php echo __('Save', 'cfgcse'); ?>" />
 	</li>
 </ul>
 </form>

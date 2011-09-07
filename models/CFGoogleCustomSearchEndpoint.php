@@ -1,5 +1,6 @@
 <?php
 
+load_textdomain('cfgcse');
 if (!class_exists('CFGoogleCustomSearchEngineEndpoint')) {
 class CFGoogleCustomSearchEndpoint {
 	private static $_result;
@@ -97,14 +98,14 @@ class CFGoogleCustomSearchEndpoint {
 				$items_markup .= apply_filters('cf_gcse_item_record_markup', "<li class=\"search_item_wrapper\">$item_content</li>", $item_content, $item_record, $results);
 			}
 			$list_markup = apply_filters('cf_gcse_result_list_markup', "<ol class=\"search_results_wrapper\">$items_markup</ol>", $items_markup, $results);
-			$results_desc = apply_filters('cf_gcse_results_desc_markup', "<h4 class=\"search_results_description\">Showing results $start - $end (of $total_results) for search '$search_term'</h4>", $start, $end, $total_results, $search_term, $results);
-			$title_markup = apply_filters('cf_gcse_results_title_markup', "<h3 class=\"search_results_title\">Search Results</h3>", $results);
+			$results_desc = apply_filters('cf_gcse_results_desc_markup', "<h4 class=\"search_results_description\">".__('Showing results', 'cfgcse')." $start - $end (".__('of', 'cfgcse')." $total_results) ".__('for search', 'cfgcse')." '$search_term'</h4>", $start, $end, $total_results, $search_term, $results);
+			$title_markup = apply_filters('cf_gcse_results_title_markup', '<h3 class="search_results_title">'.__('Search Results', 'cfgcse').'</h3>', $results);
 			$html = apply_filters('cf_gcse_results_markup', "<div id=\"cf_gcse_search_results\">{$title_markup}{$results_desc}{$list_markup}</div>", $title_markup, $results_desc, $list_markup, $results);
 		}
 		else {
 			$html = apply_filters('cf_gcse_no_results_markup', 
-				apply_filters('cf_gcse_no_results_title', '<h3>Search Results</h3>', $results).
-				apply_filters('cf_gcse_no_results_message', "<p>Sorry, no results were found for '$search_term'</p>", $search_term, $results),
+				apply_filters('cf_gcse_no_results_title', '<h3>'.__('Search Results', 'cfgcse').'</h3>', $results).
+				apply_filters('cf_gcse_no_results_message', "<p>".__('Sorry, no results were found for', 'cfgcse')." '$search_term'</p>", $search_term, $results),
 				$results
 			);
 		}

@@ -8,7 +8,7 @@ Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
 
-//load_plugin_domain('cfgcse');
+load_textdomain('cfgcse');
 
 include dirname(__file__).'/models/CFGoogleCustomSearchEndpoint.php';
 
