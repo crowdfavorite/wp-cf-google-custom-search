@@ -1,6 +1,7 @@
 <?php
 
-load_textdomain('cfgcse');
+// This plugin does not yet have a mo file to reference
+load_textdomain('cfgcse', '.');
 if (!class_exists('CFGoogleCustomSearchEngineEndpoint')) {
 class CFGoogleCustomSearchEndpoint {
 	private static $_result;

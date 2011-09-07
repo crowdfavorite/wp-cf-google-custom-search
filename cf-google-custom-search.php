@@ -8,7 +8,8 @@ Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
 
-load_textdomain('cfgcse');
+// This plugin does not yet have a mo file to reference
+load_textdomain('cfgcse', '.');
 
 include dirname(__file__).'/models/CFGoogleCustomSearchEndpoint.php';
 

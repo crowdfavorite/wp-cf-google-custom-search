@@ -1,6 +1,7 @@
 <?php
 
-load_textdomain('cfgcse');
+// This plugin does not yet have a mo file to reference
+load_textdomain('cfgcse', '.');
 class CFGoogleCustomSearchAdmin {
 
 	public static function adminMenu() {
