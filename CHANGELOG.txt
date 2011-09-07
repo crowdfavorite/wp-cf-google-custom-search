@@ -1,6 +1,6 @@
 ### 2.0
 - Rewritten to use new RESTful API from Google
-- Requires API key
+- Requires API key, this must be set up in Google's admin interface
 - Updated admin page with new required settings
 - Highly filterable results returned, filters on every used field
 

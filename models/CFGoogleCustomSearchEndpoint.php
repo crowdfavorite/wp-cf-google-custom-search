@@ -18,9 +18,9 @@ class CFGoogleCustomSearchEndpoint {
 		$result = json_decode(get_transient("_cf_gcse_result_{$normalized_hash}"));
 		if (!$result) {
 			// Request information from Google
-			$api_key = get_option('_cf_gcse_api_key', null);
-			$cse_id = get_option('_cf_gcse_engine_id', null);
-			$results = intval(get_option('_cf_gcse_num_results', 10));
+			$api_key = get_option('_cf_gcse_api_key', null, true);
+			$cse_id = get_option('_cf_gcse_engine_id', null, true);
+			$results = intval(get_option('_cf_gcse_num_results', 10, true));
 			if ($results > 10 || $results < 1) {
 				$results = 10;
 			}
@@ -43,16 +43,23 @@ class CFGoogleCustomSearchEndpoint {
 				'cx' => $cse_id,
 			);
 			
-			$response = wp_remote_get($target, array('body'=>$args, 'sslverify' => false));
+			$args_strings = array();
+			foreach ($args as $key=>$val) {
+				$args_strings[] = "$key=".urlencode($val);
+			}
+			$target .= implode('&', $args_strings);
 			
-			if ($response && $response['code'] == 200) {
+			$response = wp_remote_get($target, array('sslverify' => false));
+			
+			if ($response && $response['response']['code'] == 200) {
 				$result = json_decode($response['body']);
 				if (apply_filters('cf_gcse_unset_pagemap', true, $result)) {
 					foreach ($result->items as &$item_record) {
-						unset($item_record['pagemap']);
+						die(print_r($item_record));
+						unset($item_record->pagemap);
 					}
 				}
-				update_transient("_cf_gcse_result_{$normalized_hash}", json_encode($result));
+				set_transient("_cf_gcse_result_{$normalized_hash}", json_encode($result));
 			}
 		}
 		// We now have a valid v1 REST API resposne from Google to parse and generate code
@@ -61,23 +68,28 @@ class CFGoogleCustomSearchEndpoint {
 	}
 	
 	public static function onShortcode($atts) {
-		if (!self::$_results || empty(self::$_results)) {
+		if (!self::$_result || empty(self::$_result)) {
 			return;
 		}
 		// Get meta information about query
-		$results = self::$_results;
+		$results = self::$_result;
 		$request_data = $results->queries->request[0];
 		$total_results = $request_data->totalResults;
 		$start = $request_data->startIndex;
-		$end = $start + $request_data->count;
+		$end = $start + $request_data->count - 1;
 		$title = $request_data->title;
 		$search_term = $request_data->searchTerms;
 		
+		if ($total_results > 100) {
+			// The user cannot see more than 100 results, so we don't report more than that to them.
+			$total_results = 100;
+		}
+		
 		$html = '';
-		if ($request->items && !empty($request->items)) {
+		if ($results->items && !empty($results->items)) {
 			// We have items to display
 			$items_markup = '';
-			foreach ($request->items as $item_record) {
+			foreach ($results->items as $item_record) {
 				$item_link = apply_filters('cf_gcse_item_link', sprintf('<a class="search_item_link" href="%s">%s</a>', $item_record->link, $item_record->title), $item_record->link, $item_record->title, $item_record, $results);
 				$item_snippet = apply_filters('cf_gcse_item_snippet', sprintf('<p class="search_item_snippet">%s</p>', $item_record->htmlSnippet), $item_record->htmlSnippet, $item_record, $results);
 				$display_link = apply_filters('cf_gcse_item_display_link', sprintf('<p class="search_item_display_link">%s</p>', $item_record->displayLink), $item_record->displayLink, $item_record, $results);
@@ -87,7 +99,7 @@ class CFGoogleCustomSearchEndpoint {
 			$list_markup = apply_filters('cf_gcse_result_list_markup', "<ol class=\"search_results_wrapper\">$items_markup</ol>", $items_markup, $results);
 			$results_desc = apply_filters('cf_gcse_results_desc_markup', "<h4 class=\"search_results_description\">Showing results $start - $end (of $total_results) for search '$search_term'</h4>", $start, $end, $total_results, $search_term, $results);
 			$title_markup = apply_filters('cf_gcse_results_title_markup', "<h3 class=\"search_results_title\">Search Results</h3>", $results);
-			$html = apply_filters('cf_gcse_results_markup', "<div class=\"cf_gcse_search_results\">{$title_markup}{$results_desc}{$list_markup}</div>", $title_markup, $results_desc, $list_markup, $results);
+			$html = apply_filters('cf_gcse_results_markup', "<div id=\"cf_gcse_search_results\">{$title_markup}{$results_desc}{$list_markup}</div>", $title_markup, $results_desc, $list_markup, $results);
 		}
 		else {
 			$html = apply_filters('cf_gcse_no_results_markup', 
