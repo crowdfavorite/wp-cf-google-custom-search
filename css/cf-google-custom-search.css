@@ -1,0 +1,30 @@
+#cf_gcse_search_results { }
+
+#cf_gcse_search_results p {
+	margin: 0;
+	padding: 0;
+}
+
+#cf_gcse_search_results .search_results_wrapper {
+	list-style: none;
+}
+
+#cf_gcse_search_results .search_item_wrapper {
+	margin-bottom: 1em;
+}
+
+#cf_gcse_search_results .search_item_link {
+	font-size: 10pt;
+	line-height: 10pt;
+}
+
+#cf_gcse_search_results .search_item_snippet {
+	font-size: 8pt;
+	line-height: 8pt;
+}
+
+#cf_gcse_search_results .search_item_display_link {
+	font-size: 6pt;
+	line-height: 6pt;
+	color: #009933;
+}
