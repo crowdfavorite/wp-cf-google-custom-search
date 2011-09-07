@@ -8,9 +8,21 @@ Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
 
-// Enqueue the styles in the plugin
-wp_register_style('cf_google_custom_search', plugins_url('cf-google-custom-search.css', __FILE__));
-wp_enqueue_style('cf_google_custom_search');
+
+/**
+ * Bring in the plugin's resources when necessary.  
+ * Moved into WP so it can utilize the contextual functions.
+ *
+ * @return void
+ */
+function cf_google_custom_search_enqueue_resources() {
+	// Only bring in our front-end CSS on search 
+	if (is_search()) {
+		wp_enqueue_style('cf_google_custom_search', plugins_url('cf-google-custom-search.css', __FILE__));
+	}
+}
+add_action('wp', 'cf_google_custom_search_enqueue_resources');
+
 
 /**
  * Output the HTML and JavaScript that does the Google Search
@@ -43,10 +55,10 @@ function cf_google_custom_search_admin_form() {
 		if (!check_admin_referer('cfgcs', 'cfgcs_settings_nonce')) {
 			wp_die('You should not be here.');
 		}
-		update_option('cf_google_search_config', stripslashes_deep(trim($_POST['google_search_config'])));
-		update_option('cf_google_search_domain', stripslashes_deep(trim($_POST['google_search_domain'])));
-		update_option('cf_google_search_parent', stripslashes_deep(trim($_POST['google_search_parent'])));
-		$updated_string = '<div class="updated fade" id="message" style="background-color: rgb(255, 251, 204);"><p><strong>Settings saved.</strong></p></div>';
+		update_option('cf_google_search_config', strip_tags(stripslashes(trim($_POST['google_search_config']))));
+		update_option('cf_google_search_domain', strip_tags(stripslashes(trim($_POST['google_search_domain']))));
+		update_option('cf_google_search_parent', strip_tags(stripslashes(trim($_POST['google_search_parent']))));
+		$updated_string = '<div class="updated fade" id="message"><p><strong>Settings saved.</strong></p></div>';
 	}
 	$google_search_domain = get_option('cf_google_search_domain');
 	$google_search_parent = get_option('cf_google_search_parent');
@@ -67,7 +79,7 @@ function cf_google_custom_search_admin_form() {
 					</tr>
 					<tr>
 						<th scope="row"><label for="google_search_parent">Results Parent Element ID<br />(default "searchcontrol")</label></th>
-						<td><input type="text" name="google_search_parent" vlaue="<?php echo esc_attr($google_search_parent); ?>" id="google_search_parent" style="width: 500px;"/></td>
+						<td><input type="text" name="google_search_parent" value="<?php echo esc_attr($google_search_parent); ?>" id="google_search_parent" style="width: 500px;"/></td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="google_search_config">Custom Google Search Script<br />(Advanced Use Only)<?php echo apply_filters('cf_google_search_custom_notes', $notes); ?></label></th>

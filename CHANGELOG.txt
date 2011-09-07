@@ -3,6 +3,9 @@
 - Altered plugin to load the default search page
 - Deprecated cf_google_custom_search_form() function in favor of just using the standard search form
 - Lightened server load by stopping default WP search because we're completely overriding it. (props VIP support)
+- Only load the CSS for search results on a search page
+- Better data sanitizing on admin page
+- Fixed bug with parent element input
 
 ### 1.2.2
 - Added additional security
