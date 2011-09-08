@@ -1,6 +1,7 @@
 <?php
 
-load_textdomain('cfgcse');
+// The mo file for this plugin has not been created yet
+load_textdomain('cfgcse', '.');
 class CFGoogleCustomSearchAdmin {
 
 	public static function adminMenu() {
@@ -22,23 +23,26 @@ class CFGoogleCustomSearchAdmin {
 		$results = intval(get_option('_cf_gcse_num_results', 10)); ?>
 <h1><?php echo __('CF Google Custom Search Engine Configuration', 'cfgcse'); ?></h1>
 <form action="" method="post" id="cf_google_custom_search_admin">
-<ul>
-	<li>
-		<label for="cf_gcse_api_key"><?php echo __('Google API Key', 'cfgcse'); ?>:</label>
-		<input type="text" id="cf_gcse_api_key" name="cf_gcse_api_key" value="<?php echo $api_key; ?>" />
-	</li>
-	<li>
-		<label for="cf_gcse_num_results"><?php echo __('Results Per Page', 'cfgcse'); ?> (1 - 10):</label>
-		<input type="text" id="cf_gcse_num_results" name="cf_gcse_num_results" value="<?php echo $results; ?>" />
-	</li>
-	<li>
-		<label for="cf_gcse_remote_id"><?php echo __('Search Engine ID', 'cfgcse'); ?>:</label>
-		<input type="text" id="cf_gcse_engine_id" name="cf_gcse_engine_id" value="<?php echo $cse_id; ?>" />
-	</li>
-	<li>
-		<input type="submit" name="cf_google_custom_search_save" value="<?php echo __('Save', 'cfgcse'); ?>" />
-	</li>
-</ul>
+<table class="form-table">
+	<tbody>
+	<tr>
+		<th scope="row"><label for="cf_gcse_api_key"><?php echo __('Google API Key', 'cfgcse'); ?>:</label></th>
+		<td><input type="text" id="cf_gcse_api_key" name="cf_gcse_api_key" value="<?php echo $api_key; ?>" class="widefat" /></td>
+	</tr>
+	<tr>
+		<th scope="row"><label for="cf_gcse_num_results"><?php echo __('Results Per Page', 'cfgcse'); ?> (1 - 10):</label></th>
+		<td><input type="text" id="cf_gcse_num_results" name="cf_gcse_num_results" value="<?php echo $results; ?>" class="widefat" /></td>
+	</tr>
+	<tr>
+		<th scope="row"><label for="cf_gcse_remote_id"><?php echo __('Search Engine ID', 'cfgcse'); ?>:</label></th>
+		<td><input type="text" id="cf_gcse_engine_id" name="cf_gcse_engine_id" value="<?php echo $cse_id; ?>" class="widefat" /></td>
+	</tr>
+	<tr>
+		<th><input type="submit" name="cf_google_custom_search_save" value="<?php echo __('Save', 'cfgcse'); ?>" class="button-primary" /></th>
+		<td></td>
+	</tr>
+	</tbody>
+</table>
 </form>
 <?php
 	}

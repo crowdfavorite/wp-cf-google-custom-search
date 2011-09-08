@@ -10,21 +10,37 @@
 }
 
 #cf_gcse_search_results .search_item_wrapper {
-	margin-bottom: 1em;
+	padding: 1em 0em;
+	border-bottom: thin dotted;
 }
 
 #cf_gcse_search_results .search_item_link {
-	font-size: 10pt;
-	line-height: 10pt;
+	font-size: 14px;
+	line-height: 14px;
 }
 
 #cf_gcse_search_results .search_item_snippet {
-	font-size: 8pt;
-	line-height: 8pt;
+	font-size: 10px;
+	line-height: 10px;
 }
 
 #cf_gcse_search_results .search_item_display_link {
-	font-size: 6pt;
-	line-height: 6pt;
+	font-size: 10px;
+	line-height: 10px;
 	color: #009933;
+}
+
+#cf_gcse_search_results .search_results_next_page {
+	float: right;
+	margin: .5em 0 0 1em;
+}
+
+#cf_gcse_search_results .search_results_prev_page {
+	float: left;
+	margin: .5em 1em 0 0;
+}
+
+#cf_gcse_search_results .search_results_next_page,
+#cf_gcse_search_results .search_results_prev_page {
+	font-size: 14px;
 }
