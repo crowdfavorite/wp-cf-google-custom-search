@@ -3,7 +3,7 @@
 Plugin Name: CF Google Custom Search
 Plugin URI:
 Description: Utilize Google's Custom Search API instead of WordPress' search functionality.
-Version: 1.3
+Version: 1.3.1
 Author: Crowd Favorite
 Author URI: http://crowdfavorite.com/
 */
@@ -186,13 +186,24 @@ add_filter('cf_google_search_custom_notes', 'cf_add_google_search_custom_notes')
  * @return string
  */
 function cf_google_search_kill_wp_search( $where, $query ) {
-	if(!is_admin() && $query->is_search()) {
-	    $where = ' AND 1=0';
+	// We only modify non-admin AND search queries
+	if (!is_admin() && $query->is_search()) {
+	
+		// 3.3 know-how for main query check
+		if (method_exists($query, 'is_main_query')) {
+			if ($query->is_main_query()) {
+			    $where = ' AND 1=0';
+			}
+		}
+		else { // fall back to global to see if it's the main query
+			global $wp_the_query;
+			if ($query === $wp_the_query) {
+			    $where = ' AND 1=0';
+			}
+		}
 	}
 	
-	// Only need to do this for the main query
-	remove_filter('posts_where', 'cf_google_search_kill_wp_search', 10, 2);
-	
+	// Return our possibly modified $where
 	return $where;
 }
 add_filter('posts_where', 'cf_google_search_kill_wp_search', 10, 2);
