@@ -30,13 +30,13 @@ class CFGoogleCustomSearchEndpoint {
 			/*if ($offset > (100-$results)) {
 				$offset = 100-$results;
 			}*/
-			
+
 			if (!($api_key && $cse_id)) {
 				return;
 			}
-			
+
 			$target = 'https://www.googleapis.com/customsearch/v1';
-			
+
 			$args = array(
 				'key' => $api_key,
 				'q' => $search_term,
@@ -45,9 +45,9 @@ class CFGoogleCustomSearchEndpoint {
 				'cx' => $cse_id,
 				'filter' => 0,
 			);
-			
+
 			$response = wp_remote_get(add_query_arg($args, $target), array('sslverify' => false));
-			
+
 			if ($response && $response['response']['code'] == 200) {
 				$result = json_decode($response['body']);
 				if (apply_filters('cf_gcse_unset_pagemap', true, $result)) {
@@ -62,7 +62,7 @@ class CFGoogleCustomSearchEndpoint {
 		// Store it in the private member variable of the class to be processed on the display shortcode
 		self::$_result = $result;
 	}
-	
+
 	public static function onShortcode($atts) {
 		global $paged;
 		if ($paged == 0) {
@@ -79,7 +79,7 @@ class CFGoogleCustomSearchEndpoint {
 		$end = $start + $request_data->count - 1;
 		$title = $request_data->title;
 		$search_term = $request_data->searchTerms;
-		
+
 		$html = '';
 		if ($results->items && !empty($results->items)) {
 			// We have items to display
@@ -105,7 +105,7 @@ class CFGoogleCustomSearchEndpoint {
 			$html = apply_filters('cf_gcse_results_markup', "<div id=\"cf_gcse_search_results\">{$title_markup}{$results_desc}{$list_markup}{$prev_link}{$next_link}</div>", $title_markup, $results_desc, $list_markup, $results);
 		}
 		else {
-			$html = apply_filters('cf_gcse_no_results_markup', 
+			$html = apply_filters('cf_gcse_no_results_markup',
 				apply_filters('cf_gcse_no_results_title', '<h3>'.__('Search Results', 'cfgcse').'</h3>', $results).
 				apply_filters('cf_gcse_no_results_message', "<p>".__('Sorry, no results were found for', 'cfgcse')." '$search_term'</p>", $search_term, $results),
 				$results
@@ -120,4 +120,3 @@ add_action('template_redirect', 'CFGoogleCustomSearchEndpoint::onSearch');
 add_shortcode('cf-google-search-results', 'CFGoogleCustomSearchEndpoint::onShortcode');
 
 }
-?>

@@ -7,7 +7,7 @@ class CFGoogleCustomSearchAdmin {
 	public static function adminMenu() {
 		add_submenu_page('options-general.php', __('CF Google Search', 'cfgcse'), __('CF Google Search', 'cfgcse'), 10, 'cf-google-custom-search', 'CFGoogleCustomSearchAdmin::adminPage');
 	}
-	
+
 	public static function adminPage() {
 		if (array_key_exists('cf_google_custom_search_save', $_POST)) {
 			update_option('_cf_gcse_api_key', $_POST['cf_gcse_api_key']);
@@ -50,5 +50,3 @@ class CFGoogleCustomSearchAdmin {
 }
 
 add_action('admin_menu', 'CFGoogleCustomSearchAdmin::adminMenu');
-
-?>
