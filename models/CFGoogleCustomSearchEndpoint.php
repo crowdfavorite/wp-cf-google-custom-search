@@ -2,7 +2,7 @@
 
 // The mo file for this plugin has not been created yet
 load_textdomain('cfgcse', '.');
-if (!class_exists('CFGoogleCustomSearchEngineEndpoint')) {
+if (!class_exists('CFGoogleCustomSearchEndpoint')) {
 class CFGoogleCustomSearchEndpoint {
 	private static $_result;
 
