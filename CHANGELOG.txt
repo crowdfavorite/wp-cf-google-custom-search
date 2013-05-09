@@ -1,3 +1,7 @@
+### 2.0.3
+- Remove unused $atts parameter on onShortcode() in endpoint class
+- Change default "no results" message to use search term instad of always-empty string
+
 ### 2.0.2
 - Corrected class name in check
 
