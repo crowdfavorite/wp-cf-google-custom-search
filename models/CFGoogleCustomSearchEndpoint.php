@@ -2,7 +2,7 @@
 
 // The mo file for this plugin has not been created yet
 load_textdomain('cfgcse', '.');
-if (!class_exists('CFGoogleCustomSearchEngineEndpoint')) {
+if (!class_exists('CFGoogleCustomSearchEndpoint')) {
 class CFGoogleCustomSearchEndpoint {
 	private static $_result;
 
@@ -63,7 +63,7 @@ class CFGoogleCustomSearchEndpoint {
 		self::$_result = $result;
 	}
 
-	public static function onShortcode($atts) {
+	public static function onShortcode() {
 		global $paged;
 		if ($paged == 0) {
 			$paged = 1;
@@ -107,7 +107,7 @@ class CFGoogleCustomSearchEndpoint {
 		else {
 			$html = apply_filters('cf_gcse_no_results_markup',
 				apply_filters('cf_gcse_no_results_title', '<h3>'.__('Search Results', 'cfgcse').'</h3>', $results).
-				apply_filters('cf_gcse_no_results_message', "<p>".__('Sorry, no results were found for', 'cfgcse')." '$search_term'</p>", $search_term, $results),
+				apply_filters('cf_gcse_no_results_message', "<p>".__('Sorry, no results were found for', 'cfgcse')." '" . esc_html( get_query_var('s') ) . "'.</p>", get_query_var('s'), $results),
 				$results
 			);
 		}
