@@ -39,7 +39,7 @@ class CFGoogleCustomSearchEndpoint {
 
 			$args = array(
 				'key' => $api_key,
-				'q' => $search_term,
+				'q' => rawurlencode($search_term),
 				'num' => $results,
 				'start' => $offset,
 				'cx' => $cse_id,
